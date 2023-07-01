@@ -1,73 +1,58 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using FMOD;
+using FMOD.Studio;
+using FMODUnity;
+using Unity.VisualScripting;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
-[RequireComponent(typeof(Rigidbody))]
+[RequireComponent(typeof(CarController))]
 public class CarAudioHandler : MonoBehaviour
 {
-    private Rigidbody _rigidbody;
+   private CarController _carController;
+   private EventInstance _carEngineSoundInstance;
+   
 
-    [SerializeField] private float lowSpeed, mediumSpeed;
-    [SerializeField] private AudioSource idleSpeedAudio, lowSpeedAudio, mediumSpeedAudio, highSpeedAudio;
-    
-    private SpeedEnum _speedEnum;
-
-    private void Awake()
-    {
-        _rigidbody = GetComponent<Rigidbody>();
-    }
-
-    private void Update()
-    {
-        float currentSpeed = _rigidbody.velocity.magnitude;
-        if (currentSpeed <= 2 )
-        {
-            if (_speedEnum == SpeedEnum.Idle) return;
-            _speedEnum = SpeedEnum.Idle;
-            lowSpeedAudio.Stop();
-            mediumSpeedAudio.Stop();
-            highSpeedAudio.Stop();
-            if (!highSpeedAudio.isPlaying)  idleSpeedAudio.Play();;
-        }
-        else if (currentSpeed <= lowSpeed)
-        {
-            if (_speedEnum == SpeedEnum.Low) return;
-            _speedEnum = SpeedEnum.Low;
-            idleSpeedAudio.Stop();
-            mediumSpeedAudio.Stop();
-            highSpeedAudio.Stop();
-            if (!highSpeedAudio.isPlaying) lowSpeedAudio.Play();
-        }
-        else if (currentSpeed <= mediumSpeed)
-        {
-            if (_speedEnum == SpeedEnum.Medium) return;
-            _speedEnum = SpeedEnum.Medium;
-            idleSpeedAudio.Stop();
-            lowSpeedAudio.Stop();
-            highSpeedAudio.Stop();
-            if (!highSpeedAudio.isPlaying) mediumSpeedAudio.Play();
-        }
-        else
-        {
-            if (_speedEnum == SpeedEnum.High) return;
-            _speedEnum = SpeedEnum.High;
-            
-            idleSpeedAudio.Stop();
-            lowSpeedAudio.Stop();
-            mediumSpeedAudio.Stop();
-            if (!highSpeedAudio.isPlaying) highSpeedAudio.Play();
-        }
+   [SerializeField] private EventReference carEngineSoundReference;
+   [SerializeField] private EventReference carCrashSoundReference;
+   [SerializeField] private ParamRef rpm;
+   [SerializeField] private ParamRef accelerationInput;
+   [SerializeField] private ParamRef impulse;
+   [SerializeField] private Transform audioEmitterTransform;
 
 
-       
-    }
-}
+   private void Awake()
+   {
+      _carController = GetComponent<CarController>();
+      _carEngineSoundInstance = RuntimeManager.CreateInstance(carEngineSoundReference);
+     
+   }
 
-public enum SpeedEnum
-{
-    Idle,
-    Low,
-    Medium,
-    High
+   private void Start()
+   {
+      RuntimeManager.AttachInstanceToGameObject(_carEngineSoundInstance, audioEmitterTransform);
+      _carEngineSoundInstance.start();
+   }
+
+   private void Update()
+   {
+      _carEngineSoundInstance.setParameterByName(rpm.Name, Sigmoid(Mathf.Abs(_carController.Rpm)));
+      _carEngineSoundInstance.setParameterByName(accelerationInput.Name, Mathf.Abs(_carController.AccelerationInput));
+      
+   }
+
+   private void OnCollisionEnter(Collision other)
+   { 
+      var crashInstance = RuntimeManager.CreateInstance(carCrashSoundReference);
+     
+      var result = crashInstance.setParameterByName(impulse.Name, other.impulse.magnitude/16000);
+      Debug.Log($"{other.impulse.magnitude/16000} {result}");
+      crashInstance.set3DAttributes( other.GetContact(0).point.To3DAttributes());
+      crashInstance.start();
+      crashInstance.release();
+   }
+
+   private float Sigmoid(float x) =>  1 - 1 / (1 + x/2000);
 }

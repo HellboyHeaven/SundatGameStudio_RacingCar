@@ -1,53 +1,73 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class CarController : MonoBehaviour
 {
-    private float _currentSteerAngle, _currentbreakForce;
+    private float _currentSteerAngle;
 
-    // Settings
-    [SerializeField] private float motorForce, breakForce, maxSteerAngle;
+    [Header("Settings")]
+    [SerializeField] private float motorForce;
+    [SerializeField] private float motorForceBack ;
+    [SerializeField] private float breakForce;
+    [SerializeField] private float maxSteerAngle;
 
-    // Wheel Colliders
-    [SerializeField] private WheelCollider frontLeftWheelCollider, frontRightWheelCollider;
-    [SerializeField] private WheelCollider rearLeftWheelCollider, rearRightWheelCollider;
-
-    // Wheels
-    [SerializeField] private Transform frontLeftWheelTransform, frontRightWheelTransform;
-    [SerializeField] private Transform rearLeftWheelTransform, rearRightWheelTransform;
+    [Header("Wheels")]
+    [SerializeField] private WheelCollider frontLeftWheelCollider;
+    [SerializeField] private WheelCollider frontRightWheelCollider;
+    [SerializeField] private WheelCollider rearLeftWheelCollider;
+    [SerializeField] private WheelCollider rearRightWheelCollider;
+    [SerializeField] private Transform frontLeftWheelTransform;
+    [SerializeField] private Transform frontRightWheelTransform;
+    [SerializeField] private Transform rearLeftWheelTransform;
+    [SerializeField] private Transform rearRightWheelTransform;
 
     public float HorizontalInput { get; set; }
     public float VerticalInput { get; set; }
-    public float CurrentVelocity { get; private set; }
+    public float AngularVelocity { get; private set; }
+    public float AccelerationInput { get; private set; }
+
+    public float Rpm { get; set; }
 
 
     private void FixedUpdate() {
         HandleMotor();
         HandleSteering();
         UpdateWheels();
+        SetState();
     }
 
     private void HandleMotor() {
-        frontLeftWheelCollider.motorTorque = VerticalInput * motorForce;
-        frontRightWheelCollider.motorTorque = VerticalInput * motorForce;
-        CurrentVelocity = Mathf.Max(frontLeftWheelCollider.rotationSpeed, frontRightWheelCollider.rotationSpeed);
-        _currentbreakForce = CurrentVelocity  * VerticalInput < 0 ? breakForce : 0f;
-        ApplyBreaking();
+        frontLeftWheelCollider.motorTorque = (VerticalInput > 0 ? motorForce : motorForceBack) * VerticalInput;
+        frontRightWheelCollider.motorTorque =  (VerticalInput > 0 ? motorForce : motorForceBack) * VerticalInput;
+        AccelerationInput = Mathf.Lerp(AccelerationInput, VerticalInput, Time.fixedDeltaTime / 100);
+        ApplyBreaking( AngularVelocity * VerticalInput < 0 ? breakForce : 0);
     }
-
-    private void ApplyBreaking() {
-        frontRightWheelCollider.brakeTorque = _currentbreakForce;
-        frontLeftWheelCollider.brakeTorque = _currentbreakForce;
-        rearLeftWheelCollider.brakeTorque = _currentbreakForce;
-        rearRightWheelCollider.brakeTorque = _currentbreakForce;
-    }
-
+    
     private void HandleSteering() {
         _currentSteerAngle = maxSteerAngle * HorizontalInput;
         frontLeftWheelCollider.steerAngle = _currentSteerAngle;
         frontRightWheelCollider.steerAngle = _currentSteerAngle;
+    }
+
+    private void SetState()
+    {
+        AngularVelocity = (
+            frontLeftWheelCollider.rotationSpeed +
+            frontRightWheelCollider.rotationSpeed + 
+            rearLeftWheelCollider.rotationSpeed + 
+            rearRightWheelCollider.rotationSpeed)/4;
+        Rpm = (
+            frontLeftWheelCollider.rpm +
+            frontRightWheelCollider.rpm + 
+            rearLeftWheelCollider.rpm + 
+            rearRightWheelCollider.rpm)/4;
+    }
+
+    private void ApplyBreaking(float force) {
+        frontRightWheelCollider.brakeTorque = force;
+        frontLeftWheelCollider.brakeTorque = force;
+        rearLeftWheelCollider.brakeTorque = force;
+        rearRightWheelCollider.brakeTorque = force;
     }
 
     private void UpdateWheels() {

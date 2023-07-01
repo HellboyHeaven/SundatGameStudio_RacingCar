@@ -1,0 +1,9 @@
+{f93382d9-2c5a-4da5-bff0-cad88146ba63} bank:/Master
+{612ea20d-5d21-01e7-39b9-402670b5bcfb} bank:/Master.strings
+{ce1f519b-77f7-426f-9001-3c8af91f89bd} bank:/SFX
+{5a871b87-9db9-428c-b08d-55550405bfcc} bus:/
+{d06efb99-622f-4d3e-b5a4-a057483ad486} bus:/Reverb
+{30b9b0ad-ea3c-402b-909e-b2bf4c21f935} event:/Car Crash
+{fc7d163a-cbf4-4e4c-b5f4-806603316901} event:/Car Engine
+{e2567289-f924-4e8e-a431-039b45c788ee} parameter:/Accelaration Input
+{2b11fe32-fad9-4128-a410-3d13c6dc0f9b} parameter:/RPM

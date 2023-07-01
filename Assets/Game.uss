@@ -1,0 +1,26 @@
+.unity-button :active {
+    background-color: rgba(150, 150, 150, 0);
+    border-left-color: rgba(150, 150, 150, 0.78);
+    border-right-color: rgba(150, 150, 150, 0.78);
+    border-top-color: rgba(150, 150, 150, 0.78);
+    border-bottom-color: rgba(150, 150, 150, 0.78);
+    margin-top: 10px;
+    transition-duration: 0.5s;
+    -unity-background-image-tint-color: rgba(150, 150, 150, 0.78);
+}
+
+.unity-button :hover {
+    transition-duration: 0.5s;
+    background-color: rgb(255, 150, 150);
+    -unity-background-image-tint-color: rgba(255, 150, 150, 0.78);
+    border-left-color: rgba(150, 150, 150, 0.78);
+    border-right-color: rgba(150, 150, 150, 0.78);
+    border-top-color: rgba(150, 150, 150, 0.78);
+    border-bottom-color: rgba(150, 150, 150, 0.78);
+    flex-grow: 1;
+    background-image: url('project://database/Assets/Models/ARCADE%20-%20FREE%20Racing%20Car/Textures/AFRC_Env_Mat.png?fileID=2800000&guid=34a74330fac842a4f97649ddf77d6d50&type=3#AFRC_Env_Mat');
+}
+
+#UpButton :hover {
+    -unity-background-image-tint-color: rgb(255, 0, 0);
+}
